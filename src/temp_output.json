@@ -1,0 +1,74 @@
+{
+  "Pedro": {
+    "Sample": "1.0000",
+    "Caio Vocal": "1.0000",
+    "Chris": "1.0000",
+    "Rogerio": "1.0000",
+    "Caio Baixo": "1.0000",
+    "Herc Guitarra": "1.0000",
+    "Herc Vocal": "1.0000",
+    "Bruno Teclado": "1.0000",
+    "Bruno Guitarra": "1.0000",
+    "Metronome": "3.1286"
+  },
+  "Herc": {
+    "Sample": "4.0000",
+    "Caio Vocal": "2.5229",
+    "Chris": "2.8201",
+    "Rogerio": "0.0641",
+    "Caio Baixo": "0.0000",
+    "Herc Guitarra": "3.2392",
+    "Herc Vocal": "0.4392",
+    "Bruno Teclado": "0.0000",
+    "Bruno Guitarra": "3.8973",
+    "Metronome": "1.2334"
+  },
+  "Bruno": {
+    "Sample": "1.0000",
+    "Caio Vocal": "1.0000",
+    "Chris": "1.0000",
+    "Rogerio": "1.0000",
+    "Caio Baixo": "1.0000",
+    "Herc Guitarra": "1.0000",
+    "Herc Vocal": "1.0000",
+    "Bruno Teclado": "1.0000",
+    "Bruno Guitarra": "1.0000",
+    "Metronome": "1.0000"
+  },
+  "Caio": {
+    "Sample": "1.0000",
+    "Caio Vocal": "0.1608",
+    "Chris": "0.6661",
+    "Rogerio": "1.0000",
+    "Caio Baixo": "1.4876",
+    "Herc Guitarra": "0.3895",
+    "Herc Vocal": "0.3448",
+    "Bruno Teclado": "1.0000",
+    "Bruno Guitarra": "1.0000",
+    "Metronome": "1.0000"
+  },
+  "Rogerio": {
+    "Sample": "1.0000",
+    "Caio Vocal": "1.0000",
+    "Chris": "1.0000",
+    "Rogerio": "1.0000",
+    "Caio Baixo": "1.0000",
+    "Herc Guitarra": "1.0000",
+    "Herc Vocal": "1.0000",
+    "Bruno Teclado": "1.0000",
+    "Bruno Guitarra": "1.0000",
+    "Metronome": "1.0000"
+  },
+  "Chris": {
+    "Sample": "1.0000",
+    "Caio Vocal": "1.0000",
+    "Chris": "1.0000",
+    "Rogerio": "1.0000",
+    "Caio Baixo": "1.0000",
+    "Herc Guitarra": "1.0000",
+    "Herc Vocal": "1.0000",
+    "Bruno Teclado": "1.0000",
+    "Bruno Guitarra": "1.0000",
+    "Metronome": "1.0000"
+  }
+}
