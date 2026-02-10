@@ -5,7 +5,15 @@ import App from './App.jsx'
 import { ConfigProvider, theme } from 'antd'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ConfigProvider theme={theme.darkAlgorithm}>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorText: '#ffffff',
+          colorTextSecondary: 'rgba(255, 255, 255, 0.85)',
+        },
+      }}
+    >
       <App />
     </ConfigProvider>
   </StrictMode>,

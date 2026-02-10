@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Slider, Flex, Select } from "antd";
+import { Slider, Flex, Tabs } from "antd";
 
 // URL base do Reaper - carregada de config.json (editável após o build)
 const getConfigUrl = () => {
@@ -53,59 +53,39 @@ function App() {
   
   const [selectedOutput, setSelectedOutput] = useState(null)
   
+  const UPDATE_JSON_ACTION = "_RS7d161cd8b6903e0e8165e59fb8f141967daf27a6";
+
   const handleVolumeChange = (sendTrackId, newVolume) => {
-    if (!reaperUrl) return;
+    if (!reaperUrl || !selectedOutput) return;
     const url = `${reaperUrl}/_/SET/TRACK/${sendTrackId}/SEND/${selectedOutput}/VOL/${newVolume}`;
-    axios
-      .get(url)
-      .catch((err) => console.error("Erro ao enviar volume:", err));
+    axios.get(url).catch((err) => console.error("Erro ao enviar volume:", err));
   };
 
-  const handleChangeOutput = (e) => {
-    console.log(e);
-    axios.get('temp_output.json').then(response => {
-      console.log(response);
-      console.log(response.data);
-      
-      const json = response.data
-      const output = outputs.find(x => x.name.includes(e))
-      setSelectedOutput(output.index)
-      console.log(json);
-      
-      console.log(json[output.name]);
-      console.log(json[output.name]["Herc Guitarra"]);
-  
-      console.log(json[output.name]["Herc Guitarra"])
-      console.log(json[output.name]["Herc Vocal"])
-      console.log(json[output.name]["Chris"])
-      console.log(json[output.name]["Caio Baixo"])
-      console.log(json[output.name]["Caio Vocal"])
-      console.log(json[output.name]["Bruno Teclado"])
-      console.log(json[output.name]["Bruno Guitarra"])
-      console.log(json[output.name]["Rogerio"])
-      console.log(json[output.name]["Metronome"])
-      console.log(json[output.name]["Sample"])
-  
-  
-  
-      setVolHerc(json[output.name]["Herc Guitarra"])
-      setVolHercVocal(json[output.name]["Herc Vocal"])
-      setVolChris(json[output.name]["Chris"])
-      setVolCaio(json[output.name]["Caio Baixo"])
-      setVolCaioVocal(json[output.name]["Caio Vocal"])
-      setVolBruno(json[output.name]["Bruno Teclado"])
-      setVolBrunoGuitarra(json[output.name]["Bruno Guitarra"])
-      setVolRogerio(json[output.name]["Rogerio"])
-      setVolMetronomo(json[output.name]["Metronome"])
-      setVolSamples(json[output.name]["Sample"])
-    })
-  }
+  const handleChangeOutput = (key) => {
+    console.log("handleChangeOutput", key);
+    const output = outputs.find((x) => x.name.includes(key));
+    console.log("output", output);
+    if (!output) return;
 
-
-  useEffect(() => {
-    if (!reaperUrl) return;
-    axios.get(`${reaperUrl}/_/_RS9b151125a0eecbe8c0fe277e70df395e52f5f593`);
-  }, [reaperUrl]);
+    // Chama a action do Reaper para atualizar o temp_output.json, depois lê o arquivo
+    axios
+      .get(`${reaperUrl}/_/${UPDATE_JSON_ACTION}`)
+      .then(() => axios.get(`${reaperUrl}/temp_output.json`))
+      .then((response) => {
+        const json = response.data;
+        setVolHerc(json[output.name]["Herc Guitarra"])
+        setVolHercVocal(json[output.name]["Herc Vocal"])
+        setVolChris(json[output.name]["Chris"])
+        setVolCaio(json[output.name]["Caio Baixo"])
+        setVolCaioVocal(json[output.name]["Caio Vocal"])
+        setVolBruno(json[output.name]["Bruno Teclado"])
+        setVolBrunoGuitarra(json[output.name]["Bruno Guitarra"])
+        setVolRogerio(json[output.name]["Rogerio"])
+        setVolMetronomo(json[output.name]["Metronome"])
+        setVolSamples(json[output.name]["Sample"])
+      })
+      .catch((err) => console.error("Erro ao carregar preset:", err));
+  };
 
   const knob = (label, value, callback) => {
     return <Flex justify="center" align="center" style={{width: '100%'}}>
@@ -144,33 +124,48 @@ function App() {
           config.json não encontrado, usando fallback (localhost:8082)
         </div>
       )}
-      {/* {knob('teste', volHerc, (e) => { setVolHerc(parseFloat((e))); handleVolumeChange(2, (parseFloat(e)))}) } */}
-
-      {
-        !selectedOutput &&
-        <Select name="" id="" placeholder="Selecione seu canal" onChange={handleChangeOutput} style={{width: '80%'}}>
-          <option value="Herc">Herc</option>
-          <option value="Chris">Chris</option>
-          <option value="Caio">Caio</option>
-          <option value="Bruno">Bruno</option>
-          <option value="Rogerio">Rogerio</option>
-
-        </Select>
-      }
-
-      {selectedOutput && knob('Herc', volHerc, (e) => { setVolHerc(parseFloat((e))); handleVolumeChange(2, (parseFloat(e)))}) }
-      {selectedOutput && knob('Herc Vocal', volHercVocal, (e) => { setVolHercVocal(parseFloat((e))); handleVolumeChange(3, (parseFloat(e)))}) }
-      {selectedOutput && knob('Chris', volChris, (e) => { setVolChris(parseFloat((e))); handleVolumeChange(4, (parseFloat(e)))}) }
-      {selectedOutput && knob('Caio', volCaio, (e) => { setVolCaio(parseFloat((e))); handleVolumeChange(5, (parseFloat(e)))}) }
-      {selectedOutput && knob('Caio Vocal', volCaioVocal, (e) => { setVolCaioVocal(parseFloat((e))); handleVolumeChange(6, (parseFloat(e)))}) }
-      {selectedOutput && knob('Bruno', volBruno, (e) => { setVolBruno(parseFloat((e))); handleVolumeChange(7, (parseFloat(e)))}) }
-      {selectedOutput && knob('Bruno Guitarra', volBrunoGuitarra, (e) => { setVolBrunoGuitarra(parseFloat((e))); handleVolumeChange(8, (parseFloat(e)))}) }
-      {selectedOutput && knob('Rogério', volRogerio, (e) => { setVolRogerio(parseFloat((e))); handleVolumeChange(9, (parseFloat(e)))}) }
-      {selectedOutput && knob('Metronomo', volMetronomo, (e) => { setVolMetronomo(parseFloat((e))); handleVolumeChange(18, (parseFloat(e)))}) }
-      {selectedOutput && knob('Samples', volSamples, (e) => { setVolSamples(parseFloat((e))); handleVolumeChange(19, (parseFloat(e)))}) }
-
-
-
+      <Tabs
+        defaultActiveKey="Master"
+        style={{ width: '100%' }}
+        onChange={(key) => {
+          if (key !== 'Master') {
+            const output = outputs.find((x) => x.name === key);
+            if (output) setSelectedOutput(output.index);
+            handleChangeOutput(key);
+          }
+        }}
+        items={[
+          {
+            key: 'Master',
+            label: 'Master',
+            children: (
+              <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+              </p>
+            ),
+          },
+          ...outputs.map(({ name }) => ({
+            key: name,
+            label: name,
+            children: (
+              <Flex vertical gap={8}>
+                {knob('Herc', volHerc, (e) => { setVolHerc(parseFloat(e)); handleVolumeChange(2, parseFloat(e)); })}
+                {knob('Herc Vocal', volHercVocal, (e) => { setVolHercVocal(parseFloat(e)); handleVolumeChange(3, parseFloat(e)); })}
+                {knob('Chris', volChris, (e) => { setVolChris(parseFloat(e)); handleVolumeChange(4, parseFloat(e)); })}
+                {knob('Caio', volCaio, (e) => { setVolCaio(parseFloat(e)); handleVolumeChange(5, parseFloat(e)); })}
+                {knob('Caio Vocal', volCaioVocal, (e) => { setVolCaioVocal(parseFloat(e)); handleVolumeChange(6, parseFloat(e)); })}
+                {knob('Bruno', volBruno, (e) => { setVolBruno(parseFloat(e)); handleVolumeChange(7, parseFloat(e)); })}
+                {knob('Bruno Guitarra', volBrunoGuitarra, (e) => { setVolBrunoGuitarra(parseFloat(e)); handleVolumeChange(8, parseFloat(e)); })}
+                {knob('Rogério', volRogerio, (e) => { setVolRogerio(parseFloat(e)); handleVolumeChange(9, parseFloat(e)); })}
+                {knob('Metronomo', volMetronomo, (e) => { setVolMetronomo(parseFloat(e)); handleVolumeChange(18, parseFloat(e)); })}
+                {knob('Samples', volSamples, (e) => { setVolSamples(parseFloat(e)); handleVolumeChange(19, parseFloat(e)); })}
+              </Flex>
+            ),
+          })),
+        ]}
+      />
     </Flex>
   );
 }
