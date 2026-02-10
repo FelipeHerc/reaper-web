@@ -40,3 +40,26 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Tabs - reduzir espaçamento entre as abas */
+#root .ant-tabs-tab {
+  margin: 0 2px !important;
+  padding: 8px 4px !important;
+}
+
+#root .ant-tabs-nav {
+  margin-bottom: 12px;
+}
+
+/* Handle do slider colorido - usa variável --slider-color do pai */
+.slider-colored .ant-slider-handle {
+  border-color: var(--slider-color) !important;
+  background-color: var(--slider-color) !important;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.slider-colored .ant-slider-handle:hover,
+.slider-colored .ant-slider-handle:focus {
+  border-color: var(--slider-color) !important;
+  background-color: var(--slider-color) !important;
+}

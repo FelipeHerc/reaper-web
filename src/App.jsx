@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Slider, Flex, Tabs } from "antd";
+import "./App.css";
 
 // URL base do Reaper - carregada de config.json (editável após o build)
 const getConfigUrl = () => {
@@ -26,18 +27,58 @@ function App() {
         setReaperUrl("http://localhost:8082"); // fallback
       });
   }, []);
+  // Escala logarítmica: -90 dB a +12 dB, 0 dB (value=1) em 75% do slider
+  const DB_MIN = -90;
+  const DB_MAX = 12;
+  const VALUE_MIN = 0.00003; // ~-90 dB
+  const POS_0DB = 75; // 0 dB em 75% do slider
+
   const linearToDb = (linear) => {
     if (linear <= 0.00001) return -Infinity;
     return 20 * Math.log10(linear);
   };
+
+  // Valor linear (0-4) -> posição do slider (0-100)
+  const valueToSliderPos = (value) => {
+    if (value <= 0) return 0;
+    const db = Math.max(DB_MIN, 20 * Math.log10(Math.max(value, VALUE_MIN)));
+    if (db <= 0) return Math.round((db - DB_MIN) / (-DB_MIN) * POS_0DB);
+    return Math.round(POS_0DB + (100 - POS_0DB) * (db / DB_MAX));
+  };
+
+  // Posição do slider (0-100) -> valor linear (0-4)
+  const sliderPosToValue = (pos) => {
+    if (pos <= 0) return VALUE_MIN;
+    let db;
+    if (pos <= POS_0DB) {
+      db = DB_MIN + (pos / POS_0DB) * (-DB_MIN);
+    } else {
+      db = ((pos - POS_0DB) / (100 - POS_0DB)) * DB_MAX;
+    }
+    return Math.min(4, Math.pow(10, db / 20));
+  };
   
   const outputs = [
-    {index: 1, name: "Herc"},
-    {index: 2, name: "Chris"},
-    {index: 3, name: "Caio"},
-    {index: 4, name: "Bruno"},
-    {index: 5, name: "Rogerio"},
-  ]
+    { index: 1, name: "Herc", color: "#e74c3c" },
+    { index: 2, name: "Chris", color: "#3498db" },
+    { index: 3, name: "Caio", color: "#f1c40f" },
+    { index: 4, name: "Bruno", color: "#ecf0f1" },
+    { index: 5, name: "Rogerio", color: "#2ecc71" },
+  ];
+
+  const tabLabel = (name, color) => (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "4px 10px",
+        borderRadius: 4,
+        backgroundColor: color || "rgba(255,255,255,0.1)",
+        color: color ? "#141414" : undefined,
+      }}
+    >
+      {name}
+    </span>
+  );
   
   
   const [volHerc, setVolHerc] = useState(0.5)
@@ -73,40 +114,59 @@ function App() {
       .then(() => axios.get(`${reaperUrl}/temp_output.json`))
       .then((response) => {
         const json = response.data;
-        setVolHerc(json[output.name]["Herc Guitarra"])
-        setVolHercVocal(json[output.name]["Herc Vocal"])
-        setVolChris(json[output.name]["Chris"])
-        setVolCaio(json[output.name]["Caio Baixo"])
-        setVolCaioVocal(json[output.name]["Caio Vocal"])
-        setVolBruno(json[output.name]["Bruno Teclado"])
-        setVolBrunoGuitarra(json[output.name]["Bruno Guitarra"])
-        setVolRogerio(json[output.name]["Rogerio"])
-        setVolMetronomo(json[output.name]["Metronome"])
-        setVolSamples(json[output.name]["Sample"])
+        const parse = (v) => parseFloat(v) || 0;
+        setVolHerc(parse(json[output.name]["Herc Guitarra"]))
+        setVolHercVocal(parse(json[output.name]["Herc Vocal"]))
+        setVolChris(parse(json[output.name]["Chris"]))
+        setVolCaio(parse(json[output.name]["Caio Baixo"]))
+        setVolCaioVocal(parse(json[output.name]["Caio Vocal"]))
+        setVolBruno(parse(json[output.name]["Bruno Teclado"]))
+        setVolBrunoGuitarra(parse(json[output.name]["Bruno Guitarra"]))
+        setVolRogerio(parse(json[output.name]["Rogerio"]))
+        setVolMetronomo(parse(json[output.name]["Metronome"]))
+        setVolSamples(parse(json[output.name]["Sample"]))
       })
       .catch((err) => console.error("Erro ao carregar preset:", err));
   };
 
-  const knob = (label, value, callback) => {
-    return <Flex justify="center" align="center" style={{width: '100%'}}>
+  const knob = (label, value, callback, color) => {
+    const sliderPos = valueToSliderPos(value);
+    return (
+      <Flex justify="center" align="center" style={{ width: '100%' }}>
         <Flex flex={3} justify="center" align="center">
-          <label htmlFor="">
-            {label}
-          </label>
+          <label>{label}</label>
         </Flex>
-        <Flex flex={6} justify="center" align="center">
+        <Flex flex={6} justify="center" align="center" style={{ position: 'relative', width: '100%', '--slider-color': color }} className="slider-colored">
           <Slider
-              style={{ flex: 'auto' }}
-              min={0}
-              max={4}
-              value={value}
-              step={0.0001}
-              onChange={(e) => callback(e)}
+            style={{ flex: 'auto' }}
+            min={0}
+            max={100}
+            value={sliderPos}
+            onChange={(pos) => callback(sliderPosToValue(pos))}
+            trackStyle={{ backgroundColor: color }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              left: '75%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 2,
+              height: 16,
+              backgroundColor: 'rgba(255,255,255,0.6)',
+              borderRadius: 1,
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+            title="0 dB"
           />
         </Flex>
-        <Flex flex={3} justify="center" align="center">{linearToDb(value).toFixed(4)} Db</Flex>
+        <Flex flex={3} justify="center" align="center">
+          {linearToDb(value) === -Infinity ? '-∞' : linearToDb(value).toFixed(2)} dB
+        </Flex>
       </Flex>
-  }
+    );
+  };
 
 
   if (!reaperUrl) {
@@ -137,7 +197,7 @@ function App() {
         items={[
           {
             key: 'Master',
-            label: 'Master',
+            label: tabLabel('Master'),
             children: (
               <p>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
@@ -146,21 +206,21 @@ function App() {
               </p>
             ),
           },
-          ...outputs.map(({ name }) => ({
+          ...outputs.map(({ name, color }) => ({
             key: name,
-            label: name,
+            label: tabLabel(name, color),
             children: (
               <Flex vertical gap={8}>
-                {knob('Herc', volHerc, (e) => { setVolHerc(parseFloat(e)); handleVolumeChange(2, parseFloat(e)); })}
-                {knob('Herc Vocal', volHercVocal, (e) => { setVolHercVocal(parseFloat(e)); handleVolumeChange(3, parseFloat(e)); })}
-                {knob('Chris', volChris, (e) => { setVolChris(parseFloat(e)); handleVolumeChange(4, parseFloat(e)); })}
-                {knob('Caio', volCaio, (e) => { setVolCaio(parseFloat(e)); handleVolumeChange(5, parseFloat(e)); })}
-                {knob('Caio Vocal', volCaioVocal, (e) => { setVolCaioVocal(parseFloat(e)); handleVolumeChange(6, parseFloat(e)); })}
-                {knob('Bruno', volBruno, (e) => { setVolBruno(parseFloat(e)); handleVolumeChange(7, parseFloat(e)); })}
-                {knob('Bruno Guitarra', volBrunoGuitarra, (e) => { setVolBrunoGuitarra(parseFloat(e)); handleVolumeChange(8, parseFloat(e)); })}
-                {knob('Rogério', volRogerio, (e) => { setVolRogerio(parseFloat(e)); handleVolumeChange(9, parseFloat(e)); })}
-                {knob('Metronomo', volMetronomo, (e) => { setVolMetronomo(parseFloat(e)); handleVolumeChange(18, parseFloat(e)); })}
-                {knob('Samples', volSamples, (e) => { setVolSamples(parseFloat(e)); handleVolumeChange(19, parseFloat(e)); })}
+                {knob('Herc', volHerc, (e) => { setVolHerc(parseFloat(e)); handleVolumeChange(2, parseFloat(e)); }, '#e74c3c')}
+                {knob('Herc Vocal', volHercVocal, (e) => { setVolHercVocal(parseFloat(e)); handleVolumeChange(3, parseFloat(e)); }, '#e74c3c')}
+                {knob('Chris', volChris, (e) => { setVolChris(parseFloat(e)); handleVolumeChange(4, parseFloat(e)); }, '#3498db')}
+                {knob('Caio', volCaio, (e) => { setVolCaio(parseFloat(e)); handleVolumeChange(5, parseFloat(e)); }, '#f1c40f')}
+                {knob('Caio Vocal', volCaioVocal, (e) => { setVolCaioVocal(parseFloat(e)); handleVolumeChange(6, parseFloat(e)); }, '#f1c40f')}
+                {knob('Bruno', volBruno, (e) => { setVolBruno(parseFloat(e)); handleVolumeChange(7, parseFloat(e)); }, '#ecf0f1')}
+                {knob('Bruno Guitarra', volBrunoGuitarra, (e) => { setVolBrunoGuitarra(parseFloat(e)); handleVolumeChange(8, parseFloat(e)); }, '#ecf0f1')}
+                {knob('Rogério', volRogerio, (e) => { setVolRogerio(parseFloat(e)); handleVolumeChange(9, parseFloat(e)); }, '#2ecc71')}
+                {knob('Metronomo', volMetronomo, (e) => { setVolMetronomo(parseFloat(e)); handleVolumeChange(18, parseFloat(e)); }, '#95a5a6')}
+                {knob('Samples', volSamples, (e) => { setVolSamples(parseFloat(e)); handleVolumeChange(19, parseFloat(e)); }, '#95a5a6')}
               </Flex>
             ),
           })),
