@@ -53,8 +53,31 @@ function GetSendMute(track_idx, send_idx)
     return mute > 0.5 and 1 or 0
 end
 
+-- Obtém o índice da track de destino para um send (usa Herc Guitarra como referência)
+function GetOutputTrackIndex(send_idx)
+  local src_track = reaper.GetTrack(0, 1)  -- Herc Guitarra (track 1)
+  if not src_track then return nil end
+  local dest_track = reaper.GetTrackSendInfo_Value(src_track, 0, send_idx, "P_DESTTRACK")
+  if not dest_track then return nil end
+  local n = reaper.CountTracks(0)
+  for i = 0, n - 1 do
+    if reaper.GetTrack(0, i) == dest_track then
+      return i
+    end
+  end
+  return nil
+end
+
+function GetTrackVolume(track_idx)
+    local track = reaper.GetTrack(0, track_idx)
+    if not track then return "1.0000" end
+    local vol = reaper.GetMediaTrackInfo_Value(track, "D_VOL")
+    return string.format("%.4f", vol)
+end
+
 local volumes = {}
 local mutes = {}
+local track_volumes = {}
 
 local tracks = {}
 tracks["Herc Guitarra"] = 1
@@ -91,7 +114,20 @@ for out_name, out_value in pairs(outs) do
   end
 end
 
-local output = { volumes = volumes, mutes = mutes }
+-- Obtém índice e volume de cada output dinamicamente
+local output_track_indices = {}
+for out_name, out_value in pairs(outs) do
+  local idx = GetOutputTrackIndex(out_value)
+  if idx and idx > 0 then
+    output_track_indices[out_name] = idx
+    track_volumes[out_name] = GetTrackVolume(idx)
+  else
+    track_volumes[out_name] = "1.0000"
+    -- não define índice quando não encontrar (evita controlar Master)
+  end
+end
+
+local output = { volumes = volumes, mutes = mutes, trackVolumes = track_volumes, trackIndices = output_track_indices }
 local json = tableToJson(output)
 -- reaper.ShowConsoleMsg(json)
 local file = io.open("C:\\Users\\hercr\\AppData\\Roaming\\REAPER\\reaper_www_root\\temp_output.json", "w")

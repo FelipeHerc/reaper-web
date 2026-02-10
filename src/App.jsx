@@ -84,9 +84,9 @@ function App() {
     { index: 3, name: "Caio", color: "#f1c40f" },
     { index: 4, name: "Bruno", color: "#ecf0f1" },
     { index: 5, name: "Rogerio", color: "#2ecc71" },
-    { index: 6, name: "Laney", color: "#aaaaaa" },
-    { index: 7, name: "Amp", color: "#aaaaaa" },
-    { index: 8, name: "Woofer", color: "#aaaaaa" },
+    { index: 6, name: "Laney", color: "#e67e22" },
+    { index: 7, name: "Amp", color: "#9b59b6" },
+    { index: 8, name: "Woofer", color: "#1abc9c" },
   ];
 
   const tabLabel = (name, color) => (
@@ -127,13 +127,23 @@ function App() {
   const [muteSamples, setMuteSamples] = useState(false)
 
   const [selectedOutput, setSelectedOutput] = useState(null)
-  
+  const [volOutTrack, setVolOutTrack] = useState(1)
+  const [trackIndices, setTrackIndices] = useState({})
+
   const UPDATE_JSON_ACTION = "_RS7d161cd8b6903e0e8165e59fb8f141967daf27a6";
 
   const handleVolumeChange = (sendTrackId, newVolume) => {
     if (!reaperUrl || !selectedOutput) return;
     const url = `${reaperUrl}/_/SET/TRACK/${sendTrackId}/SEND/${selectedOutput}/VOL/${newVolume}`;
     axios.get(url).catch((err) => console.error("Erro ao enviar volume:", err));
+  };
+
+  const handleTrackVolumeChange = (trackIndex, newVolume) => {
+    if (!reaperUrl || trackIndex == null || trackIndex === undefined) return;
+    // API do Reaper usa índices 1-based para SET/TRACK (0=Master, 1=primeira track)
+    const apiIndex = trackIndex + 1;
+    const url = `${reaperUrl}/_/SET/TRACK/${apiIndex}/VOL/${newVolume}`;
+    axios.get(url).catch((err) => console.error("Erro ao enviar volume da track:", err));
   };
 
   const handleMuteToggle = (sendTrackId, currentMute, setMute) => {
@@ -180,8 +190,53 @@ function App() {
         setMuteRogerio(parseMute(muteData["Rogerio"]))
         setMuteMetronomo(parseMute(muteData["Metronome"]))
         setMuteSamples(parseMute(muteData["Sample"]))
+        const trackVol = json.trackVolumes?.[output.name];
+        setVolOutTrack(parse(trackVol) || 1)
+        setTrackIndices((prev) => ({
+          ...prev,
+          ...(json.trackIndices || {}),
+        }))
       })
       .catch((err) => console.error("Erro ao carregar preset:", err));
+  };
+
+  const trackRow = (label, value, onVolume, color) => {
+    const sliderPos = valueToSliderPos(value);
+    return (
+      <Flex justify="center" align="center" style={{ width: '100%' }} gap={8}>
+        <Flex flex={2} justify="center" align="center" style={{ paddingRight: 8 }}>
+          <label>{label}</label>
+        </Flex>
+        <Flex flex={6} justify="center" align="center" style={{ position: 'relative', width: '100%', '--slider-color': color }} className="slider-colored">
+          <Slider
+            style={{ flex: 'auto' }}
+            min={0}
+            max={100}
+            value={sliderPos}
+            onChange={(pos) => onVolume(sliderPosToValue(pos))}
+            trackStyle={{ backgroundColor: color }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              left: '75%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 2,
+              height: 16,
+              backgroundColor: 'rgba(255,255,255,0.6)',
+              borderRadius: 1,
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+            title="0 dB"
+          />
+        </Flex>
+        <Flex flex={2} justify="center" align="center">
+          {linearToDb(value) === -Infinity ? '-∞' : linearToDb(value).toFixed(2)} dB
+        </Flex>
+      </Flex>
+    );
   };
 
   const row = (label, value, onVolume, mute, onMute, color) => {
@@ -270,6 +325,8 @@ function App() {
             label: tabLabel(name, color),
             children: (
               <Flex vertical gap={8}>
+                {trackRow(`Track ${name}`, volOutTrack, (e) => { setVolOutTrack(parseFloat(e)); handleTrackVolumeChange(trackIndices[name], parseFloat(e)); }, color)}
+                <div style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.15)', margin: '4px 0' }} />
                 {row('Herc', volHerc, (e) => { setVolHerc(parseFloat(e)); handleVolumeChange(2, parseFloat(e)); }, muteHerc, () => handleMuteToggle(2, muteHerc, setMuteHerc), '#e74c3c')}
                 {row('Herc Vocal', volHercVocal, (e) => { setVolHercVocal(parseFloat(e)); handleVolumeChange(3, parseFloat(e)); }, muteHercVocal, () => handleMuteToggle(3, muteHercVocal, setMuteHercVocal), '#e74c3c')}
                 {row('Chris', volChris, (e) => { setVolChris(parseFloat(e)); handleVolumeChange(4, parseFloat(e)); }, muteChris, () => handleMuteToggle(4, muteChris, setMuteChris), '#3498db')}
