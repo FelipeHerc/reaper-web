@@ -58,8 +58,8 @@ tracks["Caio Vocal"] = 5
 tracks["Bruno Teclado"] = 6
 tracks["Bruno Guitarra"] = 7
 tracks["Rogerio"] = 8
-tracks["Metronome"] = 17
-tracks["Sample"] = 18
+tracks["Metronome"] = 16
+tracks["Sample"] = 17
 
 
 local outs = {
@@ -68,7 +68,10 @@ local outs = {
   Chris = 2,
   Caio = 3,
   Bruno = 4,
-  Rogerio = 5
+  Rogerio = 5,
+  Laney = 6,
+  Amp = 7,
+  Woofer = 8
 }
 
 
@@ -81,7 +84,7 @@ end
 
 
 local json = tableToJson(volumes)
-reaper.ShowConsoleMsg(json)
+-- reaper.ShowConsoleMsg(json)
 local file = io.open("C:\\Users\\hercr\\AppData\\Roaming\\REAPER\\reaper_www_root\\temp_output.json", "w")
 
 file:write(json)

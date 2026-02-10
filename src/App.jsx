@@ -27,6 +27,15 @@ function App() {
         setReaperUrl("http://localhost:8082"); // fallback
       });
   }, []);
+
+  // Carrega dados da aba Herc ao iniciar (defaultActiveKey)
+  useEffect(() => {
+    if (reaperUrl) {
+      setSelectedOutput(1);
+      handleChangeOutput("Herc");
+    }
+  }, [reaperUrl]);
+
   // Escala logarítmica: -90 dB a +12 dB, 0 dB (value=1) em 75% do slider
   const DB_MIN = -90;
   const DB_MAX = 12;
@@ -64,6 +73,9 @@ function App() {
     { index: 3, name: "Caio", color: "#f1c40f" },
     { index: 4, name: "Bruno", color: "#ecf0f1" },
     { index: 5, name: "Rogerio", color: "#2ecc71" },
+    { index: 6, name: "Laney", color: "#e67e22" },
+    { index: 7, name: "Amp", color: "#9b59b6" },
+    { index: 8, name: "Woofer", color: "#1abc9c" },
   ];
 
   const tabLabel = (name, color) => (
@@ -91,7 +103,7 @@ function App() {
   const [volRogerio, setVolRogerio] = useState(0.5)
   const [volMetronomo, setVolMetronomo] = useState(0.5)
   const [volSamples, setVolSamples] = useState(0.5)
-  
+
   const [selectedOutput, setSelectedOutput] = useState(null)
   
   const UPDATE_JSON_ACTION = "_RS7d161cd8b6903e0e8165e59fb8f141967daf27a6";
@@ -103,28 +115,28 @@ function App() {
   };
 
   const handleChangeOutput = (key) => {
-    console.log("handleChangeOutput", key);
-    const output = outputs.find((x) => x.name.includes(key));
-    console.log("output", output);
-    if (!output) return;
+    const output = outputs.find((x) => x.name === key);
+    if (!output || !reaperUrl) return;
 
     // Chama a action do Reaper para atualizar o temp_output.json, depois lê o arquivo
     axios
       .get(`${reaperUrl}/_/${UPDATE_JSON_ACTION}`)
-      .then(() => axios.get(`${reaperUrl}/temp_output.json`))
+      .then(() => new Promise(r => setTimeout(r, 150)))
+      .then(() => axios.get(`${reaperUrl}/temp_output.json?t=${Date.now()}`, { headers: { 'Cache-Control': 'no-cache' } }))
       .then((response) => {
         const json = response.data;
         const parse = (v) => parseFloat(v) || 0;
-        setVolHerc(parse(json[output.name]["Herc Guitarra"]))
-        setVolHercVocal(parse(json[output.name]["Herc Vocal"]))
-        setVolChris(parse(json[output.name]["Chris"]))
-        setVolCaio(parse(json[output.name]["Caio Baixo"]))
-        setVolCaioVocal(parse(json[output.name]["Caio Vocal"]))
-        setVolBruno(parse(json[output.name]["Bruno Teclado"]))
-        setVolBrunoGuitarra(parse(json[output.name]["Bruno Guitarra"]))
-        setVolRogerio(parse(json[output.name]["Rogerio"]))
-        setVolMetronomo(parse(json[output.name]["Metronome"]))
-        setVolSamples(parse(json[output.name]["Sample"]))
+        const data = json[output.name] || {};
+        setVolHerc(parse(data["Herc Guitarra"]))
+        setVolHercVocal(parse(data["Herc Vocal"]))
+        setVolChris(parse(data["Chris"]))
+        setVolCaio(parse(data["Caio Baixo"]))
+        setVolCaioVocal(parse(data["Caio Vocal"]))
+        setVolBruno(parse(data["Bruno Teclado"]))
+        setVolBrunoGuitarra(parse(data["Bruno Guitarra"]))
+        setVolRogerio(parse(data["Rogerio"]))
+        setVolMetronomo(parse(data["Metronome"]))
+        setVolSamples(parse(data["Sample"]))
       })
       .catch((err) => console.error("Erro ao carregar preset:", err));
   };
@@ -185,28 +197,14 @@ function App() {
         </div>
       )}
       <Tabs
-        defaultActiveKey="Master"
+        defaultActiveKey="Herc"
         style={{ width: '100%' }}
         onChange={(key) => {
-          if (key !== 'Master') {
-            const output = outputs.find((x) => x.name === key);
-            if (output) setSelectedOutput(output.index);
-            handleChangeOutput(key);
-          }
+          const output = outputs.find((x) => x.name === key);
+          if (output) setSelectedOutput(output.index);
+          handleChangeOutput(key);
         }}
-        items={[
-          {
-            key: 'Master',
-            label: tabLabel('Master'),
-            children: (
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-              </p>
-            ),
-          },
-          ...outputs.map(({ name, color }) => ({
+        items={outputs.map(({ name, color }) => ({
             key: name,
             label: tabLabel(name, color),
             children: (
@@ -219,12 +217,11 @@ function App() {
                 {knob('Bruno', volBruno, (e) => { setVolBruno(parseFloat(e)); handleVolumeChange(7, parseFloat(e)); }, '#ecf0f1')}
                 {knob('Bruno Guitarra', volBrunoGuitarra, (e) => { setVolBrunoGuitarra(parseFloat(e)); handleVolumeChange(8, parseFloat(e)); }, '#ecf0f1')}
                 {knob('Rogério', volRogerio, (e) => { setVolRogerio(parseFloat(e)); handleVolumeChange(9, parseFloat(e)); }, '#2ecc71')}
-                {knob('Metronomo', volMetronomo, (e) => { setVolMetronomo(parseFloat(e)); handleVolumeChange(18, parseFloat(e)); }, '#95a5a6')}
-                {knob('Samples', volSamples, (e) => { setVolSamples(parseFloat(e)); handleVolumeChange(19, parseFloat(e)); }, '#95a5a6')}
+                {knob('Metronomo', volMetronomo, (e) => { setVolMetronomo(parseFloat(e)); handleVolumeChange(17, parseFloat(e)); }, '#95a5a6')}
+                {knob('Samples', volSamples, (e) => { setVolSamples(parseFloat(e)); handleVolumeChange(18, parseFloat(e)); }, '#95a5a6')}
               </Flex>
             ),
-          })),
-        ]}
+          }))}
       />
     </Flex>
   );
