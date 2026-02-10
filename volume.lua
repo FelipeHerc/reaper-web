@@ -47,7 +47,14 @@ function GetSendVolume(track_idx, send_idx)
     return string.format("%.4f", volume)
 end
 
+function GetSendMute(track_idx, send_idx)
+    track = reaper.GetTrack(0, track_idx)
+    local mute = reaper.GetTrackSendInfo_Value(track, 0, send_idx, "B_MUTE")
+    return mute > 0.5 and 1 or 0
+end
+
 local volumes = {}
+local mutes = {}
 
 local tracks = {}
 tracks["Herc Guitarra"] = 1
@@ -77,13 +84,15 @@ local outs = {
 
 for out_name, out_value in pairs(outs) do
   volumes[out_name] = {}
+  mutes[out_name] = {}
   for track_name, track_value in pairs(tracks) do
     volumes[out_name][track_name] = GetSendVolume(track_value, out_value)
+    mutes[out_name][track_name] = GetSendMute(track_value, out_value)
   end
 end
 
-
-local json = tableToJson(volumes)
+local output = { volumes = volumes, mutes = mutes }
+local json = tableToJson(output)
 -- reaper.ShowConsoleMsg(json)
 local file = io.open("C:\\Users\\hercr\\AppData\\Roaming\\REAPER\\reaper_www_root\\temp_output.json", "w")
 

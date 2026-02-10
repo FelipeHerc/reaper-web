@@ -63,3 +63,12 @@
   border-color: var(--slider-color) !important;
   background-color: var(--slider-color) !important;
 }
+
+/* Ícone de mute clicável */
+.mute-icon {
+  transition: color 0.2s, transform 0.15s;
+}
+.mute-icon:hover {
+  color: rgba(255, 255, 255, 1) !important;
+  transform: scale(1.15);
+}
