@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Slider, Flex, Tabs } from "antd";
+import { Slider, Flex, Tabs, Button } from "antd";
 
 const IconSpeaker = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -23,7 +23,7 @@ const getConfigUrl = () => {
 function App() {
   const [reaperUrl, setReaperUrl] = useState(null);
   const [configError, setConfigError] = useState(null);
-  console.log(reaperUrl);
+  const [flipBrunoFxAction, setFlipBrunoFxAction] = useState("_RS8c41baad8b3ad08bc468aae8f6c34bbee8969166");
   
   // Carrega config.json na inicialização. Em dev, usa /reaper (proxy do Vite evita CORS)
   useEffect(() => {
@@ -33,7 +33,10 @@ function App() {
     }
     fetch(getConfigUrl())
       .then((r) => r.json())
-      .then((config) => setReaperUrl(config.reaperUrl || "http://localhost:8082"))
+      .then((config) => {
+        setReaperUrl(config.reaperUrl || "http://localhost:8082");
+        // setFlipBrunoFxAction(config.flipBrunoFxAction || null);
+      })
       .catch((err) => {
         setConfigError(err.message);
         setReaperUrl("http://localhost:8082"); // fallback
@@ -88,6 +91,7 @@ function App() {
     { index: 6, name: "Laney", color: "#e67e22" },
     { index: 7, name: "Amp", color: "#9b59b6" },
     { index: 8, name: "Woofer", color: "#1abc9c" },
+    { index: 9, name: "PA", color: "#f39c12" },
   ];
 
   const tabLabel = (name, color) => (
@@ -155,6 +159,11 @@ function App() {
     setMute(newMute);
     const url = `${reaperUrl}/_/SET/TRACK/${sendTrackId}/SEND/${selectedOutput}/MUTE/${newMute ? 1 : 0}`;
     axios.get(url).catch((err) => console.error("Erro ao mutar:", err));
+  };
+
+  const handleFlipBrunoGuitarraFx = () => {
+    if (!reaperUrl || !flipBrunoFxAction) return;
+    axios.get(`${reaperUrl}/_/${flipBrunoFxAction}`).catch((err) => console.error("Erro ao flip FX:", err));
   };
 
   const handleChangeOutput = (key) => {
@@ -331,6 +340,11 @@ function App() {
             children: (
               <Flex vertical gap={8}>
                 {trackRow(`Track ${name}`, volOutTrack, (e) => { setVolOutTrack(parseFloat(e)); handleTrackVolumeChange(trackIndices[name], parseFloat(e)); }, color)}
+                {name === 'Bruno' && flipBrunoFxAction && (
+                  <Flex justify="center" style={{ marginTop: 4 }}>
+                    <Button size="small" onClick={handleFlipBrunoGuitarraFx}>Flip FX</Button>
+                  </Flex>
+                )}
                 <div style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.15)', margin: '4px 0' }} />
                 {row('Herc', volHerc, (e) => { setVolHerc(parseFloat(e)); handleVolumeChange(2, parseFloat(e)); }, muteHerc, () => handleMuteToggle(2, muteHerc, setMuteHerc), '#e74c3c')}
                 {row('Herc Vocal', volHercVocal, (e) => { setVolHercVocal(parseFloat(e)); handleVolumeChange(3, parseFloat(e)); }, muteHercVocal, () => handleMuteToggle(3, muteHercVocal, setMuteHercVocal), '#e74c3c')}

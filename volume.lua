@@ -102,7 +102,8 @@ local outs = {
   Rogerio = 5,
   Laney = 6,
   Amp = 7,
-  Woofer = 8
+  Woofer = 8,
+  PA = 9
 }
 
 
