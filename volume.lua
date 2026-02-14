@@ -87,9 +87,10 @@ tracks["Caio Baixo"] = 4
 tracks["Caio Vocal"] = 5
 tracks["Bruno Teclado"] = 6
 tracks["Bruno Guitarra"] = 7
-tracks["Rogerio"] = 8
-tracks["Metronome"] = 16
-tracks["Sample"] = 17
+tracks["Bruno Vocal"] = 8
+tracks["Rogerio"] = 9
+tracks["Metronome"] = 17
+tracks["Sample"] = 18
 
 
 local outs = {

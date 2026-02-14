@@ -23,7 +23,8 @@ const getConfigUrl = () => {
 function App() {
   const [reaperUrl, setReaperUrl] = useState(null);
   const [configError, setConfigError] = useState(null);
-
+  console.log(reaperUrl);
+  
   // Carrega config.json na inicialização. Em dev, usa /reaper (proxy do Vite evita CORS)
   useEffect(() => {
     if (import.meta.env.DEV) {
@@ -111,6 +112,7 @@ function App() {
   const [volCaioVocal, setVolCaioVocal] = useState(0.5)
   const [volBruno, setVolBruno] = useState(0.5)
   const [volBrunoGuitarra, setVolBrunoGuitarra] = useState(0.5)
+  const [volBrunoVocal, setVolBrunoVocal] = useState(0.5)
   const [volRogerio, setVolRogerio] = useState(0.5)
   const [volMetronomo, setVolMetronomo] = useState(0.5)
   const [volSamples, setVolSamples] = useState(0.5)
@@ -122,6 +124,7 @@ function App() {
   const [muteCaioVocal, setMuteCaioVocal] = useState(false)
   const [muteBruno, setMuteBruno] = useState(false)
   const [muteBrunoGuitarra, setMuteBrunoGuitarra] = useState(false)
+  const [muteBrunoVocal, setMuteBrunoVocal] = useState(false)
   const [muteRogerio, setMuteRogerio] = useState(false)
   const [muteMetronomo, setMuteMetronomo] = useState(false)
   const [muteSamples, setMuteSamples] = useState(false)
@@ -177,6 +180,7 @@ function App() {
         setVolCaioVocal(parse(volData["Caio Vocal"]))
         setVolBruno(parse(volData["Bruno Teclado"]))
         setVolBrunoGuitarra(parse(volData["Bruno Guitarra"]))
+        setVolBrunoVocal(parse(volData["Bruno Vocal"]))
         setVolRogerio(parse(volData["Rogerio"]))
         setVolMetronomo(parse(volData["Metronome"]))
         setVolSamples(parse(volData["Sample"]))
@@ -187,6 +191,7 @@ function App() {
         setMuteCaioVocal(parseMute(muteData["Caio Vocal"]))
         setMuteBruno(parseMute(muteData["Bruno Teclado"]))
         setMuteBrunoGuitarra(parseMute(muteData["Bruno Guitarra"]))
+        setMuteBrunoVocal(parseMute(muteData["Bruno Vocal"]))
         setMuteRogerio(parseMute(muteData["Rogerio"]))
         setMuteMetronomo(parseMute(muteData["Metronome"]))
         setMuteSamples(parseMute(muteData["Sample"]))
@@ -334,9 +339,10 @@ function App() {
                 {row('Caio Vocal', volCaioVocal, (e) => { setVolCaioVocal(parseFloat(e)); handleVolumeChange(6, parseFloat(e)); }, muteCaioVocal, () => handleMuteToggle(6, muteCaioVocal, setMuteCaioVocal), '#f1c40f')}
                 {row('Bruno', volBruno, (e) => { setVolBruno(parseFloat(e)); handleVolumeChange(7, parseFloat(e)); }, muteBruno, () => handleMuteToggle(7, muteBruno, setMuteBruno), '#ecf0f1')}
                 {row('Bruno Guitarra', volBrunoGuitarra, (e) => { setVolBrunoGuitarra(parseFloat(e)); handleVolumeChange(8, parseFloat(e)); }, muteBrunoGuitarra, () => handleMuteToggle(8, muteBrunoGuitarra, setMuteBrunoGuitarra), '#ecf0f1')}
-                {row('Rogério', volRogerio, (e) => { setVolRogerio(parseFloat(e)); handleVolumeChange(9, parseFloat(e)); }, muteRogerio, () => handleMuteToggle(9, muteRogerio, setMuteRogerio), '#2ecc71')}
-                {row('Metronomo', volMetronomo, (e) => { setVolMetronomo(parseFloat(e)); handleVolumeChange(17, parseFloat(e)); }, muteMetronomo, () => handleMuteToggle(17, muteMetronomo, setMuteMetronomo), '#95a5a6')}
-                {row('Samples', volSamples, (e) => { setVolSamples(parseFloat(e)); handleVolumeChange(18, parseFloat(e)); }, muteSamples, () => handleMuteToggle(18, muteSamples, setMuteSamples), '#95a5a6')}
+                {row('Bruno Vocal', volBrunoVocal, (e) => { setVolBrunoVocal(parseFloat(e)); handleVolumeChange(9, parseFloat(e)); }, muteBrunoVocal, () => handleMuteToggle(9, muteBrunoVocal, setMuteBrunoVocal), '#ffffff')}
+                {row('Rogério', volRogerio, (e) => { setVolRogerio(parseFloat(e)); handleVolumeChange(10, parseFloat(e)); }, muteRogerio, () => handleMuteToggle(10, muteRogerio, setMuteRogerio), '#2ecc71')}
+                {row('Metronomo', volMetronomo, (e) => { setVolMetronomo(parseFloat(e)); handleVolumeChange(18, parseFloat(e)); }, muteMetronomo, () => handleMuteToggle(18, muteMetronomo, setMuteMetronomo), '#95a5a6')}
+                {row('Samples', volSamples, (e) => { setVolSamples(parseFloat(e)); handleVolumeChange(19, parseFloat(e)); }, muteSamples, () => handleMuteToggle(19, muteSamples, setMuteSamples), '#95a5a6')}
               </Flex>
             ),
           }))}
